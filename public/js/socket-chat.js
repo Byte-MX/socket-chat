@@ -2,7 +2,6 @@ var socket = io();
 
 var params = new URLSearchParams(window.location.search);
 
-//if (!params.has('nombre') || !params.has('sala')) {
 if (!params.has('nombre')) {
     window.location = 'index.html';
     throw new Error('Se requiere un nombre de usuario');
@@ -19,11 +18,8 @@ var usuario = {
 
 // Escuchar respuesta a mi solicitud (automática) de conexión.
 socket.on('connect', function() {
-    //console.log('params:' + params);
-    console.log('Sala elegida: ' + sala);
-    console.log('Conectado al servidor');
     socket.emit('entrarChat', usuario, function(resp) {
-        console.log('Usuarios conectados: ', resp);
+        renderizarUsuarios(resp);
     });
 });
 
@@ -34,29 +30,16 @@ socket.on('disconnect', function() {
 
 // Escuchar un mensaje general
 socket.on('mensajeGeneral', function(msg) {
-    console.log(msg.nombre + ': ' + msg.mensaje + '\n(' + new Date(msg.fecha) + ')');
+    renderizarMensajes(msg, false);
+    scrollBottom();
 });
 
 // Escuchar la lista de usuarios
-socket.on('listaPersonas', function(msg) {
-    /* var todos = '';
-     for (usuario in msg) {
-         todos += usuario.nombre;
-     }
-     console.log('Usuarios conectados: ', todos);*/
-    console.log('Usuarios conectados: ', msg);
+socket.on('listaPersonas', function(info) {
+    renderizarUsuarios(info);
 });
 
 // Mensaje privado
 socket.on('mensajePrivado', function(msg) {
     console.log('[Mensaje privado de ' + msg.nombre + ']: ' + msg.mensaje + '\n (' + new Date(msg.fecha) + ')');
 });
-
-// Enviar información
-/*
-socket.emit('mensajeGeneral', {
-    usuario: usuario.nombre,
-    mensaje: 'Hola Mundo'
-}, function(resp) {
-    console.log('Respuesta server: ', resp);
-});*/
